@@ -43,9 +43,11 @@ mainMenu:
    bl printf
    ldr r0, =menuSelection
    bl printf
-   
+
+@*********   
 inputClear:
-   ldr r0, =strInputPrompt @ Put the address of my string into the first parameter
+@**********
+   ldr r0, =strInputPattern @ Put the address of my string into the first parameter
    bl  printf              @ Call the C printf to display input prompt. 
 
 @*******************
@@ -76,33 +78,64 @@ getSelection:
 addNumbers:
 @*******************
 @ Asks the user for a first integer to act as an addend.
-   ldr rx, =addFirstPrompt
+   ldr r2, =addFirstPrompt
+   bl getSelection
+   mv r3, r1
+@ Asks the user for a second integer to act as an adder.
+   ldr r2, =addSecondPrompt
+   bl getSelection
+   mv r4, r1
+
+   adds r4, r3, r4
+   mv r1, r4
+   bl printf
+
 @ Step 2b - Subtraction Implementation
-   ldr rx, =addSecondPrompt
 @********************
 subNumbers:
 @********************
 @ Asks the user for the integer to be subtracted from.
-   ldr rx, =subFirstPrompt
+   ldr r2, =subFirstPrompt
+   bl getSelection
+   mv r3, r1
 @ Asks the user for the integer to subtract by.
-   ldr rx, =subSecondPrompt
+   ldr r2, =subSecondPrompt
+   bl getSelection
+   mv r4, r1
+
+   subs r4, r3, r4
+   mv r1, r4
+   bl printf
 
 @ Step 2c - Multiplication Implementation 
 @********************
 mulNumbers:
 @********************
 @ Asks the user for the integer to serve as the multiplicand.
-   ldr rx, =mulFirstPrompt
+   ldr r2, =mulFirstPrompt
+   bl getSelection
+   mv r3, r1
 @ Asks the user for the integer to serve as the multiplier.
-   ldr rx, =mulSecondPrompt
+   ldr r2, =mulSecondPrompt
+   bl getSelection
+   mv r4, r1
+
+   muls r4, r3, r4
+   mv r1, r4
+   bl printf
+
 @ Step 2d - Division Implementation
 @********************
 divNumbersInit:
 @********************
 @ Asks the user for the integer to serve as the dividend.
-   ldr rx, =divFirstPrompt
+   ldr r2, =divFirstPrompt
+   bl getSelection
+   mv r3, r1
 @ Asks the user for the integer to serve as the divisor.
-   ldr rx, =divSecondPrompt
+   ldr r2, =divSecondPrompt
+   bl getSelection
+   mv r4, r1
 @ Checks to see if the integer given for the divisor was 0. If so, branch to divByZero
 @ Else, checks to see if the integer given for the divisor was negative.  If so, continue.
 @ Else, branch forward to divNumbers.
