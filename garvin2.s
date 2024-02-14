@@ -26,7 +26,7 @@
 
 main:
 
-@ Step 1a - Welcome Prompt
+@ Step 1  -  Welcome Prompt
 @*******************
 initPrompt:
 @*******************
@@ -35,20 +35,20 @@ initPrompt:
    ldr r0, =welcomePrompt
    bl printf
 
-@ Step 2a - User Integer Input Prompt
-@****************
-intEntrancePrompt
-@****************
+@ Step 2  -  User Input for Integers
+@*******************
+intInputPrompt:
+@*******************
    ldr r0, =firstInputPrompt
    bl printf
    b getSelection
-   mv r4, [r1]
+   mov r4, [r1]
    ldr r0, =secondInputPrompt
    bl printf
    b getSelection
-   mv r5, [r1]
+   mov r5, [r1]
 
-@ Step 3a - Menu Prompt
+@ Step 3a -  Menu Prompt
 @********************
 mainMenu:
 @********************
@@ -56,45 +56,49 @@ mainMenu:
    bl printf
    ldr r0, =menuSelection
    bl printf
-    
-@ Step 2 - User Input for Integers
+
+@ Step 3b - User Menu Selection
+@********************
+menuSelect:
+@********************
+@ Instructions under this label get the user's choice for the menu as an integer, 
+@ then promptly branch to the respective subroutine based on that input. If the 
+@ user did not provide a valid input, let them know and branch to mainMenu.
 
 
-@ Step 4 - Function Subroutines with Checks
+@--- Function Subroutines with Checks ---
 
-@ Step 4a - Addition Implementation
+@ Addition Implementation
 @*******************
 addNumbers:
 @*******************
-
    add rx, ry, rz
    mv rx, ry
    bl printf
 
-@ Step 4b - Subtraction Implementation
+@ Subtraction Implementation
 @********************
 subNumbers:
 @********************
-
    sub rx, ry, rz
    mv rx, ry
    bl printf
 
-@ Step 4c - Multiplication Implementation 
+@ Multiplication Implementation 
 @********************
 mulNumbers:
 @********************
-
    mul rx, ry, rz
    mv rx, ry
    bl printf
 
-@ Step 4d - Division Implementation
+@ Division Implementation
 @********************
 divNumbers:
 @*********************
 
-@ Dedicated Branches
+
+@--- Instruction Calls ---
 
 @*******************
 getSelection:
@@ -105,7 +109,6 @@ getSelection:
 @ to use the address for our declared variable in the data section - intInput. 
 @ After the call to scanf the input is at the address pointed to by r1 which 
 @ in this case will be intInput. 
-
    ldr r0, =numInputPattern @ Setup to read in one number.
    ldr r1, =intInput        @ load r1 with the address of where the
                             @ input value will be stored. 
@@ -123,7 +126,6 @@ readError:
 @ Since an invalid entry was made we now have to clear out the input buffer by
 @ reading with this format %[^\n] which will read the buffer until the user 
 @ presses the CR. 
-
    ldr r0, =strInputPattern
    ldr r1, =strInputError   @ Put address into r1 for read.
    bl scanf                 @ scan the keyboard.
@@ -137,7 +139,6 @@ inputClear:
 @**********
    ldr r0, =strInputPattern @ Put the address of my string into the first parameter
    bl  printf              @ Call the C printf to display input prompt. 
-
 
 @***********
 rangePrompt:
@@ -167,13 +168,13 @@ myexit:
 welcomePrompt: .asciz "Hello there! This program will act as a four-function calculator until exited by the user. (That's you!) \n\n"
 
 .balign 4
-firstInputPrompt: .asciz "Please Insert your first integer: \n\n"
+firstInputPrompt: .asciz "Please enter the first integer to be used in a calculation: \n\n"
 
 .balign 4
-secondInputPrompt: .asciz "Now, please enter your second integer: \n\n"
+secondInputPrompt: .asciz "Now, please enter a second integer: \n\n"
 
 .balign 4
-menuPrompt: .asciz "Select a mathematical function below by entering its associated integer in the list below. \n"
+menuPrompt: .asciz "Next, select a mathematical function below by entering its associated integer from the list below. \n"
 
 .balign 4
 menuSelection: .asciz "1 - Addition \n2 - Subtraction \n3 - Multiplication \n 4 - Division \n\n"
@@ -184,6 +185,17 @@ strOutputNum: .asciz "The value entered is: %d \n\n"
 .balign 4
 outOfRange: .asciz "Please enter a valid number!  \n\n"
 
+.balign 4 
+addAnswer: .asciz "The answer to %d + %d is %d. \n\n"
+
+.balign 4
+subAnswer: .asciz "The answer to %d - %d is %d. \n\n"
+
+.balign 4
+mulAnswer: .asciz "The answer to %d * %d is %d. \n\n"
+
+.balign 4
+divAnswer: .asciz "The answer to %d / %d is %d with a remainder of %d. \n\n"
 
 @ Format pattern for scanf call.
 .balign 4
