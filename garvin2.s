@@ -25,17 +25,30 @@
 .global main @ Have to use main because of C library uses. 
 
 main:
-@
-@ Step 1 - Welcome Prompt
-@*******************
-prompt:
-@*******************
 
+@ Step 1a - Welcome Prompt
+@*******************
+initPrompt:
+@*******************
 @ Welcome the user, then bring them to the main menu.
    mov r2, #0
    ldr r0, =welcomePrompt
    bl printf
 
+@ Step 2a - User Integer Input Prompt
+@****************
+intEntrancePrompt
+@****************
+   ldr r0, =firstInputPrompt
+   bl printf
+   b getSelection
+   mv r4, [r1]
+   ldr r0, =secondInputPrompt
+   bl printf
+   b getSelection
+   mv r5, [r1]
+
+@ Step 3a - Menu Prompt
 @********************
 mainMenu:
 @********************
@@ -43,12 +56,45 @@ mainMenu:
    bl printf
    ldr r0, =menuSelection
    bl printf
+    
+@ Step 2 - User Input for Integers
 
-@*********   
-inputClear:
-@**********
-   ldr r0, =strInputPattern @ Put the address of my string into the first parameter
-   bl  printf              @ Call the C printf to display input prompt. 
+
+@ Step 4 - Function Subroutines with Checks
+
+@ Step 4a - Addition Implementation
+@*******************
+addNumbers:
+@*******************
+
+   add rx, ry, rz
+   mv rx, ry
+   bl printf
+
+@ Step 4b - Subtraction Implementation
+@********************
+subNumbers:
+@********************
+
+   sub rx, ry, rz
+   mv rx, ry
+   bl printf
+
+@ Step 4c - Multiplication Implementation 
+@********************
+mulNumbers:
+@********************
+
+   mul rx, ry, rz
+   mv rx, ry
+   bl printf
+
+@ Step 4d - Division Implementation
+@********************
+divNumbers:
+@*********************
+
+@ Dedicated Branches
 
 @*******************
 getSelection:
@@ -65,95 +111,12 @@ getSelection:
                             @ input value will be stored. 
    bl  scanf                @ scan the keyboard.
    cmp r0, #READERROR       @ Check for a read error.
-   beq readerror            @ If there was a read error go handle it. 
+   beq readError            @ If there was a read error go handle it. 
    ldr r1, =intInput        @ Have to reload r1 because it gets wiped out. 
    ldr r1, [r1]             @ Read the contents of intInput and store in r1 so that
-                            @ it can be printed. 
-    
-
-@ Step 2 - Calling the designated functiond
-
-@ Step 2a - Addition Implementation
-@*******************
-addNumbers:
-@*******************
-@ Asks the user for a first integer to act as an addend.
-   ldr r2, =addFirstPrompt
-   bl getSelection
-   mv r3, r1
-@ Asks the user for a second integer to act as an adder.
-   ldr r2, =addSecondPrompt
-   bl getSelection
-   mv r4, r1
-
-   adds r4, r3, r4
-   mv r1, r4
-   bl printf
-
-@ Step 2b - Subtraction Implementation
-@********************
-subNumbers:
-@********************
-@ Asks the user for the integer to be subtracted from.
-   ldr r2, =subFirstPrompt
-   bl getSelection
-   mv r3, r1
-   b inputClear
-@ Asks the user for the integer to subtract by.
-   ldr r2, =subSecondPrompt
-   bl getSelection
-   mv r4, r1
-   b inputClear
-
-   subs r4, r3, r4
-   mv r1, r4
-   bl printf
-
-@ Step 2c - Multiplication Implementation 
-@********************
-mulNumbers:
-@********************
-@ Asks the user for the integer to serve as the multiplicand.
-   ldr r2, =mulFirstPrompt
-   bl getSelection
-   mv r3, r1
-   b inputClear
-@ Asks the user for the integer to serve as the multiplier.
-   ldr r2, =mulSecondPrompt
-   bl getSelection
-   mv r4, r1
-   b inputClear
-
-   muls r4, r3, r4
-   mv r1, r4
-   bl printf
-
-@ Step 2d - Division Implementation
-@********************
-divNumbersInit:
-@********************
-@ Asks the user for the integer to serve as the dividend.
-   ldr r2, =divFirstPrompt
-   bl getSelection
-   mv r3, r1
-   b inputClear
-@ Asks the user for the integer to serve as the divisor.
-   ldr r2, =divSecondPrompt
-   bl getSelection
-   mv r4, r1
-   b inputClear
-@ Checks to see if the integer given for the divisor was 0. If so, branch to divByZero
-@ Else, checks to see if the integer given for the divisor was negative.  If so, continue.
-@ Else, branch forward to divNumbers.
-    mov r6, #1
-
-@********************
-divNumbers:
-*********************
-@ Actual divison implementation.  
 
 @***********
-readerror:
+readError:
 @***********
 @ Got a read error from the scanf routine. Clear out the input buffer then
 @ branch back for the user to enter a value. 
@@ -167,36 +130,47 @@ readerror:
 @  Not going to do anything with the input. This just cleans up the input buffer.  
 @  The input buffer should now be clear so get another input.
 
-   b prompt
+   b initPrompt
 
+@**********   
+inputClear:
+@**********
+   ldr r0, =strInputPattern @ Put the address of my string into the first parameter
+   bl  printf              @ Call the C printf to display input prompt. 
+
+
+@***********
 rangePrompt:
-ldr r0, =outOfRange
-bl printf
-b inputPrompting
+@***********
+   ldr r0, =outOfRange
+   bl printf
+   b inputPrompting
 
-@*******************
+@*********
 divByZero:
-@*******************
+@*********
 @ Presents user with error message before branching back to mainMenu.
 
-@*******************
+@******
 myexit:
-@*******************
+@******
 @ End of my code. Force the exit and return control to OS
 
    mov r7, #0x01 @ SVC call to exit
    svc 0         @ Make the system call. 
 
+
 .data
 
 @ Declare the strings and data needed
-
-
-.balign 4
-outOfRange: .asciz "Please enter a valid number!  \n\n"
-
 .balign 4
 welcomePrompt: .asciz "Hello there! This program will act as a four-function calculator until exited by the user. (That's you!) \n\n"
+
+.balign 4
+firstInputPrompt: .asciz "Please Insert your first integer: \n\n"
+
+.balign 4
+secondInputPrompt: .asciz "Now, please enter your second integer: \n\n"
 
 .balign 4
 menuPrompt: .asciz "Select a mathematical function below by entering its associated integer in the list below. \n"
@@ -208,28 +182,8 @@ menuSelection: .asciz "1 - Addition \n2 - Subtraction \n3 - Multiplication \n 4 
 strOutputNum: .asciz "The value entered is: %d \n\n"
 
 .balign 4
-addFirstPrompt: .asciz "Please enter the first you want added:  \n\n"
+outOfRange: .asciz "Please enter a valid number!  \n\n"
 
-.balign 4
-addSecondPrompt: .asciz "Please enter the second value you want added:  \n\n"
-
-.balign 4
-subFirstPrompt: .asciz "Please enter the first value you want subtracted: \n\n"
-
-.balign 4
-subSecondPrompt: .asciz "Please enter the second value you want subtracted: \n\n"
-
-.balign 4
-mulFirstPrompt: .asciz "Please enter the first value you want multiplied: \n\n"
-
-.balign 4
-mulSecondPrompt: .asciz "Please enter the second value you want multiplied: \n\n"
-
-.balign 4
-divFirstPrompt: .asciz "Please enter the first value you want divided: \n\n"
-
-.balign 4
-divSecondPrompt: .asciz "Please enter the second value you want divided: \n\n"
 
 @ Format pattern for scanf call.
 .balign 4
