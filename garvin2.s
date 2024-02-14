@@ -42,11 +42,16 @@ intInputPrompt:
    ldr r0, =firstInputPrompt
    bl printf
    b getSelection
-   mov r4, [r1]
+   cmp r1, #0
+   blt intRangePrompt
+   mov r4, r1
    ldr r0, =secondInputPrompt
    bl printf
    b getSelection
-   mov r5, [r1]
+   cmp r1, #0
+   blt intRangePrompt
+   mov r5, r1
+   push{r4, r5}
 
 @ Step 3a -  Menu Prompt
 @********************
@@ -64,6 +69,19 @@ menuSelect:
 @ Instructions under this label get the user's choice for the menu as an integer, 
 @ then promptly branch to the respective subroutine based on that input. If the 
 @ user did not provide a valid input, let them know and branch to mainMenu.
+   b getSelection
+   mov r4, r1
+   cmp r4, #1
+   blt menuRangePrompt
+   bleq addNumbers
+   cmp r1, #2
+   bleq subNumbers
+   cmp r1, #3
+   bleq mulNumbers
+   cmp r4, #4
+   bleq divNumbers
+   bgt menuRangePrompt
+
 
 
 @--- Function Subroutines with Checks ---
@@ -72,28 +90,36 @@ menuSelect:
 @*******************
 addNumbers:
 @*******************
-   add rx, ry, rz
-   mv rx, ry
+   pop{r6, r7}
+   add r8, r6, r7
+   bvs handleOverflow
+   mov r1, r8
    bl printf
+   mov pc, ir
 
 @ Subtraction Implementation
 @********************
 subNumbers:
 @********************
-   sub rx, ry, rz
-   mv rx, ry
+   pop{r6, r7}
+   sub r8, r6, r7
+   mov r1, r8
    bl printf
+   mov pc, ir
 
 @ Multiplication Implementation 
 @********************
 mulNumbers:
 @********************
-   mul rx, ry, rz
-   mv rx, ry
+   pop{r6, r7}
+   mul r8, r6, r7
+   bvs handleOverflow
+   mov r1, r8
    bl printf
+   mov pc, ir
 
 @ Division Implementation
-@********************
+@*********************
 divNumbers:
 @*********************
 
@@ -141,11 +167,27 @@ inputClear:
    bl  printf              @ Call the C printf to display input prompt. 
 
 @***********
-rangePrompt:
+intRangePrompt:
 @***********
    ldr r0, =outOfRange
    bl printf
    b inputPrompting
+
+@***********
+menuRangePrompt:
+@***********
+   ldr r0, =outOfRange
+   bl printf
+   b inputPrompting
+
+@***********
+handleOverflow:
+@***********
+@ 
+   ldr, =overflow
+   bl printf
+   b intInputPrompt
+
 
 @*********
 divByZero:
@@ -153,7 +195,7 @@ divByZero:
 @ Presents user with error message before branching back to mainMenu.
 
 @******
-myexit:
+myExit:
 @******
 @ End of my code. Force the exit and return control to OS
 
@@ -184,6 +226,9 @@ strOutputNum: .asciz "The value entered is: %d \n\n"
 
 .balign 4
 outOfRange: .asciz "Please enter a valid number!  \n\n"
+
+.balign 4
+overflow: .asciz "Solution exceeds maximum supported value! (overflow)"
 
 .balign 4 
 addAnswer: .asciz "The answer to %d + %d is %d. \n\n"
