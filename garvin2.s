@@ -76,32 +76,33 @@ getSelection:
 addNumbers:
 @*******************
 @ Asks the user for a first integer to act as an addend.
-   
+   ldr rx, =addFirstPrompt
 @ Step 2b - Subtraction Implementation
+   ldr rx, =addSecondPrompt
 @********************
 subNumbers:
 @********************
 @ Asks the user for the integer to be subtracted from.
-
+   ldr rx, =subFirstPrompt
 @ Asks the user for the integer to subtract by.
-
+   ldr rx, =subSecondPrompt
 
 @ Step 2c - Multiplication Implementation 
 @********************
 mulNumbers:
 @********************
 @ Asks the user for the integer to serve as the multiplicand.
-
+   ldr rx, =mulFirstPrompt
 @ Asks the user for the integer to serve as the multiplier.
-
+   ldr rx, =mulSecondPrompt
 @ Step 2d - Division Implementation
 @********************
 divNumbersInit:
 @********************
 @ Asks the user for the integer to serve as the dividend.
-
+   ldr rx, =divFirstPrompt
 @ Asks the user for the integer to serve as the divisor.
-
+   ldr rx, =divSecondPrompt
 @ Checks to see if the integer given for the divisor was 0. If so, branch to divByZero
 @ Else, checks to see if the integer given for the divisor was negative.  If so, continue.
 @ Else, branch forward to divNumbers.
@@ -167,6 +168,29 @@ menuSelection: .asciz "1 - Addition \n2 - Subtraction \n3 - Multiplication \n 4 
 .balign 4
 strOutputNum: .asciz "The value entered is: %d \n\n"
 
+.balign 4
+addFirstPrompt: .asciz "Please enter the first you want added:  \n\n"
+
+.balign 4
+addSecondPrompt: .asciz "Please enter the second value you want added:  \n\n"
+
+.balign 4
+subFirstPrompt: .asciz "Please enter the first value you want subtracted: \n\n"
+
+.balign 4
+subSecondPrompt: .asciz "Please enter the second value you want subtracted: \n\n"
+
+.balign 4
+mulFirstPrompt: .asciz "Please enter the first value you want multiplied: \n\n"
+
+.balign 4
+mulSecondPrompt: .asciz "Please enter the second value you want multiplied: \n\n"
+
+.balign 4
+divFirstPrompt: .asciz "Please enter the first value you want divided: \n\n"
+
+.balign 4
+divSecondPrompt: .asciz "Please enter the second value you want divided: \n\n"
 
 @ Format pattern for scanf call.
 .balign 4
