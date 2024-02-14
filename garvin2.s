@@ -98,10 +98,12 @@ subNumbers:
    ldr r2, =subFirstPrompt
    bl getSelection
    mv r3, r1
+   b inputClear
 @ Asks the user for the integer to subtract by.
    ldr r2, =subSecondPrompt
    bl getSelection
    mv r4, r1
+   b inputClear
 
    subs r4, r3, r4
    mv r1, r4
@@ -115,10 +117,12 @@ mulNumbers:
    ldr r2, =mulFirstPrompt
    bl getSelection
    mv r3, r1
+   b inputClear
 @ Asks the user for the integer to serve as the multiplier.
    ldr r2, =mulSecondPrompt
    bl getSelection
    mv r4, r1
+   b inputClear
 
    muls r4, r3, r4
    mv r1, r4
@@ -132,10 +136,12 @@ divNumbersInit:
    ldr r2, =divFirstPrompt
    bl getSelection
    mv r3, r1
+   b inputClear
 @ Asks the user for the integer to serve as the divisor.
    ldr r2, =divSecondPrompt
    bl getSelection
    mv r4, r1
+   b inputClear
 @ Checks to see if the integer given for the divisor was 0. If so, branch to divByZero
 @ Else, checks to see if the integer given for the divisor was negative.  If so, continue.
 @ Else, branch forward to divNumbers.
