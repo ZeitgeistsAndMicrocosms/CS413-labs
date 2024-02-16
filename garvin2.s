@@ -41,13 +41,13 @@ intInputPrompt:
 @*******************
    ldr r0, =firstInputPrompt
    bl printf
-   b getSelection
+   bl getSelection
    cmp r1, #0
    blt intRangePrompt
    mov r4, r1
    ldr r0, =secondInputPrompt
    bl printf
-   b getSelection
+   bl getSelection
    cmp r1, #0
    blt intRangePrompt
    mov r5, r1
@@ -69,7 +69,7 @@ menuSelect:
 @ Instructions under this label get the user's choice for the menu as an integer, 
 @ then promptly branch to the respective subroutine based on that input. If the 
 @ user did not provide a valid input, let them know and branch to mainMenu.
-   b getSelection
+   bl getSelection
    mov r4, r1
    cmp r4, #1
    blt menuRangePrompt
@@ -88,7 +88,7 @@ exitPrompt:
 @********************
    mov r0, =exitReturnPrompt
    bl printf
-   b getSelection
+   bl getSelection
    mov r4, r1
    cmp r4, #1
    blt exitRangePrompt
@@ -190,6 +190,8 @@ getSelection:
    beq readError            @ If there was a read error go handle it. 
    ldr r1, =intInput        @ Have to reload r1 because it gets wiped out. 
    ldr r1, [r1]             @ Read the contents of intInput and store in r1 so that
+
+   mov pc, lr
 
 @***********
 readError:
