@@ -74,15 +74,28 @@ menuSelect:
    cmp r4, #1
    blt menuRangePrompt
    bleq addNumbers
-   cmp r1, #2
+   cmp r4, #2
    bleq subNumbers
-   cmp r1, #3
+   cmp r4, #3
    bleq mulNumbers
    cmp r4, #4
    bleq divNumbers
    bgt menuRangePrompt
 
-
+@ Step 4  - Exit Prompt
+@********************
+exitPrompt:
+@********************
+   mov r0, =exitReturnPrompt
+   bl printf
+   b getSelection
+   mov r4, r1
+   cmp r4, #1
+   blt exitRangePrompt
+   beq intInputPrompt
+   cmp r4, #2
+   beq myExit
+   bgt exitRangePrompt
 
 @--- Function Subroutines with Checks ---
 
@@ -91,38 +104,72 @@ menuSelect:
 addNumbers:
 @*******************
    pop{r6, r7}
-   add r8, r6, r7
+   push{lr}
+   adds r8, r6, r7
    bvs handleOverflow
    mov r1, r8
-   bl printf
-   mov pc, ir
+   mov r0, =addAnswer
+   bl printf            
+   pop{lr}
+   mov pc, lr
 
 @ Subtraction Implementation
 @********************
 subNumbers:
 @********************
-   pop{r6, r7}
+   pop{r7, r6}
+   push{lr}
    sub r8, r6, r7
    mov r1, r8
-   bl printf
-   mov pc, ir
+   mov r0, =subAnswer
+   bl printf            
+   pop{lr}
+   mov pc, lr
 
 @ Multiplication Implementation 
 @********************
 mulNumbers:
 @********************
    pop{r6, r7}
-   mul r8, r6, r7
-   bvs handleOverflow
+   push{lr}
+   umull r8,r9, r6, r7
+   cmp r9, #0
+   bgt handleOverflow
    mov r1, r8
-   bl printf
-   mov pc, ir
+   mov r0, =mulAnswer
+   bl printf            
+   pop{lr}
+   mov pc, lr
 
 @ Division Implementation
 @*********************
 divNumbers:
 @*********************
-
+   pop{r7, r6}
+   push{lr}
+   cmp r7, #0
+   beq divZero
+   mov r8, #0
+   loop:
+      cmp r6, r7
+      blt exitLoop
+      sub r6, r6, r7
+      add r8, #1
+      b loop
+   exitLoop:
+     mov r0, =divAnswer
+     mov r1, r8
+     bl printf
+     mov r0, =divRemain
+     mov r1, r6
+     bl printf
+     pop{lr}
+     mov pc, lr
+   divZero:
+     mov r0, =divZeroError
+     bl printf
+     pop{lr}
+     mov pc, lr
 
 @--- Instruction Calls ---
 
@@ -181,6 +228,13 @@ menuRangePrompt:
    b inputPrompting
 
 @***********
+exitRangePrompt:
+@***********
+   ldr r0, =outOfRange
+   bl printf
+   b exitPrompt
+
+@***********
 handleOverflow:
 @***********
 @ 
@@ -188,11 +242,6 @@ handleOverflow:
    bl printf
    b intInputPrompt
 
-
-@*********
-divByZero:
-@*********
-@ Presents user with error message before branching back to mainMenu.
 
 @******
 myExit:
@@ -231,16 +280,27 @@ outOfRange: .asciz "Please enter a valid number!  \n\n"
 overflow: .asciz "Solution exceeds maximum supported value! (overflow)"
 
 .balign 4 
-addAnswer: .asciz "The answer to %d + %d is %d. \n\n"
+addAnswer: .asciz "The sum is %d. \n\n"
 
 .balign 4
-subAnswer: .asciz "The answer to %d - %d is %d. \n\n"
+subAnswer: .asciz "The difference is %d. \n\n"
 
 .balign 4
-mulAnswer: .asciz "The answer to %d * %d is %d. \n\n"
+mulAnswer: .asciz "The product is %d. \n\n"
 
 .balign 4
-divAnswer: .asciz "The answer to %d / %d is %d with a remainder of %d. \n\n"
+divAnswer: .asciz "The quotient is %d "
+
+.balign 4
+divRemain: .asciz "with a remainder of %d. \n\n"
+
+.balign 4
+divZeroError: .asciz "Cannot divide by zero! \n\n"
+
+.balign 4
+exitReturnPrompt: .asciz "Would you like to perform any further calculations? \n 1 - Yes \n 2 - No \n\n"
+
+
 
 @ Format pattern for scanf call.
 .balign 4
