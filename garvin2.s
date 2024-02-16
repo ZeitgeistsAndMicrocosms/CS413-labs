@@ -31,7 +31,6 @@ main:
 initPrompt:
 @*******************
 @ Welcome the user, then bring them to the main menu.
-   mov r2, #0
    ldr r0, =welcomePrompt
    bl printf
 
@@ -208,13 +207,7 @@ readError:
 @  The input buffer should now be clear so get another input.
 
    b initPrompt
-
-@**********   
-inputClear:
-@**********
-   ldr r0, =strInputPattern @ Put the address of my string into the first parameter
-   bl  printf              @ Call the C printf to display input prompt. 
-
+   
 @***********
 intRangePrompt:
 @***********
