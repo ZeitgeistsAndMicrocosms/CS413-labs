@@ -1,3 +1,4 @@
+
 @ Filename: garvin2.s
 @ Author:   Will Garvin | wag0014@uah.edu | CS413-01 Spring 2024
 @ Purpose:  Create a four-function calculator within ARM Assembly that utilizes
@@ -50,7 +51,7 @@ intInputPrompt:
    cmp r1, #0
    blt intRangePrompt
    mov r5, r1
-   push{r4, r5}
+   push {r4, r5}
 
 @ Step 3a -  Menu Prompt
 @********************
@@ -85,7 +86,7 @@ menuSelect:
 @********************
 exitPrompt:
 @********************
-   mov r0, =exitReturnPrompt
+   ldr r0, =exitReturnPrompt
    bl printf
    bl getSelection
    mov r4, r1
@@ -102,50 +103,50 @@ exitPrompt:
 @*******************
 addNumbers:
 @*******************
-   pop{r6, r7}
-   push{lr}
+   pop {r6, r7}
+   push {lr}
    adds r8, r6, r7
    bvs handleOverflow
    mov r1, r8
-   mov r0, =addAnswer
+   ldr r0, =addAnswer
    bl printf            
-   pop{lr}
+   pop {lr}
    mov pc, lr
 
 @ Subtraction Implementation
 @********************
 subNumbers:
 @********************
-   pop{r7, r6}
-   push{lr}
+   pop {r6, r7}
+   push {lr}
    sub r8, r6, r7
    mov r1, r8
-   mov r0, =subAnswer
+   ldr r0, =subAnswer
    bl printf            
-   pop{lr}
+   pop {lr}
    mov pc, lr
 
 @ Multiplication Implementation 
 @********************
 mulNumbers:
 @********************
-   pop{r6, r7}
-   push{lr}
-   umull r8,r9, r6, r7
+   pop {r6, r7}
+   push {lr}
+   umull r8, r9, r6, r7
    cmp r9, #0
    bgt handleOverflow
    mov r1, r8
-   mov r0, =mulAnswer
+   ldr r0, =mulAnswer
    bl printf            
-   pop{lr}
+   pop {lr}
    mov pc, lr
 
 @ Division Implementation
 @*********************
 divNumbers:
 @*********************
-   pop{r7, r6}
-   push{lr}
+   pop {r6, r7}
+   push {lr}
    cmp r7, #0
    beq divZero
    mov r8, #0
@@ -156,18 +157,18 @@ divNumbers:
       add r8, #1
       b loop
    exitLoop:
-     mov r0, =divAnswer
+     ldr r0, =divAnswer
      mov r1, r8
      bl printf
-     mov r0, =divRemain
+     ldr r0, =divRemain
      mov r1, r6
      bl printf
-     pop{lr}
+     pop {lr}
      mov pc, lr
    divZero:
-     mov r0, =divZeroError
+     ldr r0, =divZeroError
      bl printf
-     pop{lr}
+     pop {lr}
      mov pc, lr
 
 @--- Instruction Calls ---
@@ -180,7 +181,8 @@ getSelection:
 @ scanf puts the input value at the address stored in r1. We are going
 @ to use the address for our declared variable in the data section - intInput. 
 @ After the call to scanf the input is at the address pointed to by r1 which 
-@ in this case will be intInput. 
+@ in this case will be intInput.
+   push {lr}
    ldr r0, =numInputPattern @ Setup to read in one number.
    ldr r1, =intInput        @ load r1 with the address of where the
                             @ input value will be stored. 
@@ -189,7 +191,8 @@ getSelection:
    beq readError            @ If there was a read error go handle it. 
    ldr r1, =intInput        @ Have to reload r1 because it gets wiped out. 
    ldr r1, [r1]             @ Read the contents of intInput and store in r1 so that
-
+   
+   pop {lr}
    mov pc, lr
 
 @***********
@@ -213,14 +216,14 @@ intRangePrompt:
 @***********
    ldr r0, =outOfRange
    bl printf
-   b inputPrompting
+   b intInputPrompt
 
 @***********
 menuRangePrompt:
 @***********
    ldr r0, =outOfRange
    bl printf
-   b inputPrompting
+   b intInputPrompt
 
 @***********
 exitRangePrompt:
@@ -232,8 +235,8 @@ exitRangePrompt:
 @***********
 handleOverflow:
 @***********
-@ 
-   ldr, =overflow
+@
+   ldr r0, =overflow
    bl printf
    b intInputPrompt
 
@@ -244,7 +247,7 @@ myExit:
 @ End of my code. Force the exit and return control to OS
 
    mov r7, #0x01 @ SVC call to exit
-   svc 0         @ Make the system call. 
+   svc 0         @ Make the system call 
 
 
 .data
@@ -254,46 +257,46 @@ myExit:
 welcomePrompt: .asciz "Hello there! This program will act as a four-function calculator until exited by the user. (That's you!) \n\n"
 
 .balign 4
-firstInputPrompt: .asciz "Please enter the first integer to be used in a calculation: \n\n"
+firstInputPrompt: .asciz "\nPlease enter the first integer to be used in a calculation: \n\n"
 
 .balign 4
-secondInputPrompt: .asciz "Now, please enter a second integer: \n\n"
+secondInputPrompt: .asciz "\nNow, please enter a second integer: \n\n"
 
 .balign 4
-menuPrompt: .asciz "Next, select a mathematical function below by entering its associated integer from the list below. \n"
+menuPrompt: .asciz "\nNext, select a mathematical function below by entering its associated integer from the list below. \n"
 
 .balign 4
-menuSelection: .asciz "1 - Addition \n2 - Subtraction \n3 - Multiplication \n 4 - Division \n\n"
+menuSelection: .asciz "1 - Addition \n2 - Subtraction \n3 - Multiplication \n4 - Division \n\n"
 
 .balign 4
-strOutputNum: .asciz "The value entered is: %d \n\n"
+strOutputNum: .asciz "\nThe value entered is: %d \n\n"
 
 .balign 4
-outOfRange: .asciz "Please enter a valid number!  \n\n"
+outOfRange: .asciz "\nPlease enter a valid number!  \n\n"
 
 .balign 4
-overflow: .asciz "Solution exceeds maximum supported value! (overflow)"
+overflow: .asciz "\nSolution exceeds maximum supported value! (overflow)"
 
 .balign 4 
-addAnswer: .asciz "The sum is %d. \n\n"
+addAnswer: .asciz "\nThe sum is %d. \n\n"
 
 .balign 4
-subAnswer: .asciz "The difference is %d. \n\n"
+subAnswer: .asciz "\nThe difference is %d. \n\n"
 
 .balign 4
-mulAnswer: .asciz "The product is %d. \n\n"
+mulAnswer: .asciz "\nThe product is %d. \n\n"
 
 .balign 4
-divAnswer: .asciz "The quotient is %d "
+divAnswer: .asciz "\nThe quotient is %d "
 
 .balign 4
 divRemain: .asciz "with a remainder of %d. \n\n"
 
 .balign 4
-divZeroError: .asciz "Cannot divide by zero! \n\n"
+divZeroError: .asciz "\nCannot divide by zero! \n\n"
 
 .balign 4
-exitReturnPrompt: .asciz "Would you like to perform any further calculations? \n 1 - Yes \n 2 - No \n\n"
+exitReturnPrompt: .asciz "\nWould you like to perform any further calculations? \n 1 - Yes \n 2 - No \n\n"
 
 
 
