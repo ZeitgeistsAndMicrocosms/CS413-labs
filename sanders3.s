@@ -27,34 +27,161 @@
 main:
 @ Main code:
 
+ldr r11, #48 @ Initial Water Condition
+ldr r10, #0 @ Initial large cup count condition
+ldr r9, #0 @ Initia medium cup count condition
+ldr r8, #0 @ Initial small cup count condition
+
 @ Step 1 - Welcome Prompt
 @********
 userWelcome:
 @********
+@ Print user prompt
+ldr r0, =welcomePrompt
+bl printf
 
 @ Step 2 - K-cup Size Prompt
 @********
 userSizeSelection:
 @********
+@ Print user prompt and check for user input character to then branch (S, M, L, B, W, T)
+ldr r0, =userSelection
+bl printf
+bl getSelection
+cmp r1, #'S'
+beq smallCheck
+cmp r1, #'M'
+beq mediumCheck
+cmp r1, #'L'
+beq largeCheck
+cmp r1, #'B'
+b brew1
+cmp r1, #'W'
+b water
+cmp r1, #'T'
+b terminate
 
 @ Step 3 - User Water Status Delivery
 @********
 userStatusMessage:
 @********
+@ Print user Prompt and then check for B, W, or T
+ldr r0, =readyToBrew
+bl scanf
+cmp r1, #'B'
+b brew1
+cmp r1, #'W'
+b water
+cmp r1, #'T'
+b terminate
 
 @ ----------------
-@ Functions
+@ Utility Functions
 
-@ Brew Func
+@ Small Check
 @******
+smallCheck:
+@******
+@Checks to see if water level in tank is too low
+ldr r4, #6
+cmp r4, r11
+blt ...
+bge userStatusMessage
+
+@ Medium Check
+@******
+mediumCheck:
+@******
+@Checks to see if water level in tank is too low
+ldr r4, #8
+cmp r4, r11
+blt waterSupplyError
+bge userStatusMessage
+
+@ Large Check
+@******
+largeCheck:
+@******
+@Checks to see if water level in tank is too low
+ldr r4, #10
+cmp r4, r11
+blt waterSupplyError
+bge userStatusMessage
+
+@ Water Supply Error
+@******
+waterSupplyError:
+@******
+@ Lets the user know there is an error with the water supply
+ldr r0, =errorNotEnough
+b userSizeSelection
 
 @******
-
-@ Exit Func
+brewSmall:
 @******
+@ Subtracts amount of cup size of water 
+@ from total water size and adds cup size count
+sub r11, r11, #6
+add r8, r8, #1
+b welcomePrompt
 
 @******
+brewMedium:
+@******
+@ Subtracts amount of cup size of water 
+@ from total water size and adds cup size count
+sub r11, r11, #8
+add r9, r9, #1
+b welcomePrompt
 
+@******
+brewLarge:
+@******
+@ Subtracts amount of cup size of water 
+@ from total water size and adds cup size count
+sub r11, r11, #10
+add r10, r10, #1
+b welcomePrompt
+
+@ ----------------
+@ Persistent Functions
+
+@ Brew Func (B)
+@******
+brew1:
+@******
+@ Branch based on brew type
+cmp r4, #6
+beq brewSmall
+cmp r4, #8
+beq brewMedium
+cmp r4, #19
+beq brewLarge
+
+@ Secret Func (W)
+@******
+water:
+@******
+@ Presents the water remaining in the tank and how many cups have been made so far
+ldr r0, =waterRaminaing
+bl printf
+ldr r0, =cupsSoFar
+bl printf
+
+@ Exit Func (T)
+@******
+terminate:
+@******
+@ equivalent to myexit
+   mov r7, #0x01 @ SVC call to exit
+   svc 0         @ Make the system call 
+
+@ ----------------
+@ IO Functions
+
+@*******************
+getSelection: @ REDO TO READ CHARACTERS
+@*******************
 @ Set up r0 with the address of input pattern.
 @ scanf puts the input value at the address stored in r1. We are going
 @ to use the address for our declared variable in the data section - intInput. 
@@ -87,19 +214,23 @@ readError:
 @  Not going to do anything with the input. This just cleans up the input buffer.  
 @  The input buffer should now be clear so get another input.
 
+
+@ ----------------
+@ Data 
+
 .data
 
 .balign 4
 welcomePrompt: .asciz "Welcome to the Coffee Maker\n\nInsert K-cup and press B to begin making coffee.\n\nPress T to turn off machine.\n"
 
 .balign 4
-userSelection: .asciz "Please select your K-Cup size:\n\n1. Small (6 oz)\n2. Medium (8 oz)\n3. Large (10 oz)\n\n"
+userSelection: .asciz "Please select your K-Cup size:\n\n1. Small (6 oz)\n2. Medium (8 oz)\n3. Large (10 oz)\n\nInsert s for small, m for medium, or l for large\n\n"
 
 .balign 4
 readyToBrew: .asciz "Ready to Brew\n\nPlease place the K-cup in the tray and press B to brew"
 
 .balign 4
-errorTooLarge: .asciz "Error: Please choose a smaller size\n"
+errorNotEnough: .asciz "Error: Please choose a smaller size\n"
 
 .balign 4
 waterRefill: .asciz "Please refill the water conatainer\n"
@@ -126,6 +257,9 @@ intInput: .word 0   @ Location used to store the user input.
 .balign 4
 chrInput: .word 0   @ Location used to store the user input. 
 @ Let the assembler know these are the C library functions. 
+
+@ ----------------
+@ IO Syscalls
 
 .global printf
 @  To use printf:
