@@ -7,6 +7,7 @@
 @  Date           Purpose of Change
 @  ----           -----------------
 @  27-Feb-2024    Origin of Program
+@  2-Mar-2024     2nd Draft Published
 @
 @ Use these commands to assemble, link, run, and debug this program:
 @   as -o sanders3.o sanders3.s
@@ -29,7 +30,7 @@ main:
 
 ldr r11, #48 @ Initial Water Condition
 ldr r10, #0 @ Initial large cup count condition
-ldr r9, #0 @ Initia medium cup count condition
+ldr r9, #0 @ Initial medium cup count condition
 ldr r8, #0 @ Initial small cup count condition
 
 @ Step 1 - Welcome Prompt
@@ -50,15 +51,27 @@ bl printf
 bl getSelection
 cmp r1, #'S'
 beq smallCheck
+cmp r1, #'s'
+beq smallCheck
 cmp r1, #'M'
+beq mediumCheck
+cmp r1, #'m'
 beq mediumCheck
 cmp r1, #'L'
 beq largeCheck
+cmp r1, #'l'
+beq largeCheck
 cmp r1, #'B'
+b brew1
+cmp r1, #'b'
 b brew1
 cmp r1, #'W'
 b water
+cmp r1, #'w'
+b water
 cmp r1, #'T'
+b terminate
+cmp r1, #'t'
 b terminate
 
 @ Step 3 - User Water Status Delivery
@@ -67,16 +80,29 @@ userStatusMessage:
 @********
 @ Print user Prompt and then check for B, W, or T
 ldr r0, =readyToBrew
+bl printf
 bl scanf
 cmp r1, #'B'
 b brew1
+cmp r1, #'b'
+b brew1
 cmp r1, #'W'
+b water
+cmp r1, #'w'
 b water
 cmp r1, #'T'
 b terminate
+cmp r1, #'t'
+b inputError
 
 @ ----------------
 @ Utility Functions
+
+@******
+inputError:
+@******
+ldr r0, =inputErrorMsg
+bl printf
 
 @ Small Check
 @******
@@ -188,14 +214,14 @@ getSelection: @ REDO TO READ CHARACTERS
 @ After the call to scanf the input is at the address pointed to by r1 which 
 @ in this case will be intInput.
    push {lr}
-   ldr r0, =numInputPattern @ Setup to read in one number.
-   ldr r1, =intInput        @ load r1 with the address of where the
+   ldr r0, =chrInputPattern @ Setup to read in one number.                              //I think this may need to be updated. I do not remember whether or not ASM can read in chars as ints.
+   ldr r1, =chrInput        @ load r1 with the address of where the                     //This is fine though, we may just need to relabel it as charInput
                             @ input value will be stored. 
    bl  scanf                @ scan the keyboard.
    cmp r0, #READERROR       @ Check for a read error.
    beq readError            @ If there was a read error go handle it. 
    ldr r1, =intInput        @ Have to reload r1 because it gets wiped out. 
-   ldr r1, [r1]             @ Read the contents of intInput and store in r1 so that
+   ldr r1, [r1]             @ Read the contents of intInput and store in r1 so that     //Is this necessary? I think that this line may interfere with the returning value of r1.
    
    pop {lr}
    mov pc, lr
@@ -241,9 +267,12 @@ waterRaminaing: .asciz "You have %d oz remaining in the water container\n"
 .balign 4
 cupsSoFar: .asciz: "You have made %d small cups, %d medium cups, and %d large cups of coffee\n"
 
+.balign 4
+inputErrorMsg: .asciz: "The letter you inputted was not a valid option. Please try again.\n\n"
+
 @ Format pattern for scanf call.
 .balign 4
-numInputPattern: .asciz "%d"  @ integer format for read. 
+chrInputPattern: .asciz "%c"  @ integer format for read. 
 
 .balign 4
 strInputPattern: .asciz "%[^\n]" @ Used to clear the input buffer for invalid input. 
